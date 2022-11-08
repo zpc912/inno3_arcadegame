@@ -1,0 +1,86 @@
+class MainMenu {
+    var gameState;
+    var selectorState;
+    var isDown;
+    
+    
+    def MainMenu(gameStateInit, selectorStateInit) {
+        this.gameState = gameStateInit;
+        this.selectorState = selectorStateInit;
+        this.isDown = false;
+    }
+
+    
+    def drawButtons() {
+        love.graphics.print("M A I N M E N U", love.graphics.getWidth() / 2.0f - 50, love.graphics.getHeight() / 2.0f - 150);
+        love.graphics.print("Games", love.graphics.getWidth() / 2.0f - 50, love.graphics.getHeight() / 2.0f - 60);
+        love.graphics.print("Settings", love.graphics.getWidth() / 2.0f - 50, love.graphics.getHeight() / 2.0f);
+        love.graphics.print("Quit", love.graphics.getWidth() / 2.0f - 50, love.graphics.getHeight() / 2.0f + 60);
+    }
+
+    
+    def drawSelector() {
+        if(this.selectorState == 1) {
+            love.graphics.setColor(128, 128, 128);
+            love.graphics.ellipse("fill", love.graphics.getWidth() / 2.0f - 80, love.graphics.getHeight() / 2.0f - 58, 10, 4);
+        }
+        else if(this.selectorState == 2) {
+            love.graphics.setColor(128, 128, 128);
+            love.graphics.ellipse("fill", love.graphics.getWidth() / 2.0f - 80, love.graphics.getHeight() / 2.0f + 4, 10, 4);
+        }
+        else if(this.selectorState == 3) {
+            love.graphics.setColor(128, 128, 128);
+            love.graphics.ellipse("fill", love.graphics.getWidth() / 2.0f - 80, love.graphics.getHeight() / 2.0f + 64, 10, 4);
+        }
+    }
+
+
+    def inputSelector() {
+        if (love.keyboard.isDown("w") && this.selectorState == 1 && !this.isDown) {
+            this.isDown = true;
+            this.selectorState = 1;
+        }
+        else if (love.keyboard.isDown("w") && this.selectorState == 2 && !this.isDown) {
+            this.isDown = true;
+            this.selectorState = 1;
+        }
+        else if (love.keyboard.isDown("w") && this.selectorState == 3 && !this.isDown) {
+            this.isDown = true;
+            this.selectorState = 2;
+        }
+        else if (love.keyboard.isDown("s") && this.selectorState == 1 && !this.isDown) {
+            this.isDown = true;
+            this.selectorState = 2;
+        }
+        else if (love.keyboard.isDown("s") && this.selectorState == 2 && !this.isDown) {
+            this.isDown = true;
+            this.selectorState = 3;
+        }
+        else if (love.keyboard.isDown("s") && this.selectorState == 3 && !this.isDown) {
+            this.isDown = true;
+            this.selectorState = 3;
+        }
+        else if (love.keyboard.isDown("w") && this.isDown) {
+            this.isDown = true;
+        }
+        else if (love.keyboard.isDown("s") && this.isDown) {
+            this.isDown = true;
+        }
+        else {
+            this.isDown = false;
+        }
+    }
+
+
+    def buttonLogic() {
+        if (love.keyboard.isDown("x") && this.selectorState == 1) {
+            this.gameState = 1;
+        }
+        else if (love.keyboard.isDown("x") && this.selectorState == 2) {
+            this.gameState = 2;
+        }
+        else if (love.keyboard.isDown("x") && this.selectorState == 3) {
+            this.gameState = 3;
+        }
+    }
+};

@@ -1,0 +1,66 @@
+class GameSettings {
+    var gameState;
+    var selectorState;
+    var isDown;
+    var audio;
+
+
+    def GameSettings() {
+        this.selectorState = 1;
+        this.audio = "Audio: ON";
+        this.isDown = false;
+    }
+
+
+    def drawSelection() {
+        love.graphics.print("S E T T I N G S", love.graphics.getWidth() / 2.0f - 50, love.graphics.getHeight() / 2.0f - 150);
+        love.graphics.print(this.audio, love.graphics.getWidth() / 2.0f - 50, love.graphics.getHeight() / 2.0f - 60);
+        love.graphics.print("Press 'M' to go back ...", love.graphics.getWidth() / 2.0f - 50, love.graphics.getHeight() / 2.0f);
+    }
+
+
+    def drawSelector() {
+        if(this.selectorState == 1) {
+            love.graphics.setColor(128, 128, 128);
+            love.graphics.ellipse("fill", love.graphics.getWidth() / 2.0f - 80, love.graphics.getHeight() / 2.0f - 58, 10, 4);
+        }
+    }
+
+
+    def inputSelector() {
+        if(love.keyboard.isDown("w") && this.selectorState == 1) {
+            this.selectorState = 1;
+        }
+        else if(love.keyboard.isDown("s") && this.selectorState == 1) {
+            this.selectorState = 1;
+        }
+    }
+
+
+    def selectionLogic() {
+        if (love.keyboard.isDown("d") && this.selectorState == 1) {
+            this.audio = "Audio: ON";
+            mainmenu_music.setVolume(0.2);
+            pong_hit.setVolume(0.3);
+            pong_score.setVolume(0.3);
+            snake_gameover.setVolume(0.3);
+            snake_item.setVolume(0.3);
+            snake_music.setVolume(0.2);
+            mainMenu.gameState = 2;
+        }
+        else if (love.keyboard.isDown("a") && this.selectorState == 1) {
+            this.audio = "Audio: OFF";
+            mainmenu_music.setVolume(0.0);
+            pong_hit.setVolume(0.0);
+            pong_score.setVolume(0.0);
+            snake_gameover.setVolume(0.0);
+            snake_item.setVolume(0.0);
+            snake_music.setVolume(0.0);
+            mainMenu.gameState = 2;
+        }
+        else if(love.keyboard.isDown("m")) {
+            this.selectorState = 1;
+            mainMenu.gameState = 0;
+        }
+    }
+}

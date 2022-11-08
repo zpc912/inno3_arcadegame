@@ -1,0 +1,369 @@
+// Menus:
+global mainMenu;
+global mainmenu_music;
+global gameSettings;
+global gameSelection;
+
+// Pong:
+global players = [];
+global pong_hit;
+global pong_score;
+global ball;
+
+// Snake:
+global WIDTH = 64;
+global HEIGHT = 48;
+global LEN = 5;
+global gridScale = 10;
+global snakeSpeed = 0.15f;
+global Snake;
+global dir;
+global time = 0.0f;
+global Tile;
+global snake_item;
+global snake_music;
+global snake_gameover;
+
+
+// ChaiLove callback - Load the application:
+def load() {
+	love.graphics.setBackgroundColor(0, 0, 0);
+
+	// Load music files:
+	mainmenu_music = love.sound.newSoundData("assets/mainmenu_music.ogg");
+	pong_hit = love.sound.newSoundData("assets/pong_hit.ogg");
+	pong_score = love.sound.newSoundData("assets/pong_score.ogg");
+	snake_item = love.sound.newSoundData("assets/snake_item.ogg");
+	snake_music = love.sound.newSoundData("assets/snake_music.ogg");
+	snake_gameover = love.sound.newSoundData("assets/snake_gameover.ogg");
+	
+	mainmenu_music.setVolume(0.2);
+	pong_hit.setVolume(0.3);
+	pong_score.setVolume(0.3);
+	snake_item.setVolume(0.3);
+	snake_music.setVolume(0.2);
+	snake_gameover.setVolume(0.3);
+
+	// Load app files:
+	love.filesystem.load("MainMenu.chai");
+	love.filesystem.load("GameSettings.chai");
+	love.filesystem.load("GameSelection.chai");
+	
+	// Load Pong files:
+	love.filesystem.load("Player.chai");
+
+	// Pong:
+	ballReset();
+	players = [
+		Player(false, 80.0f, love.graphics.getHeight() / 2.0f),
+		Player(true, love.graphics.getWidth() - 80.0f, love.graphics.getHeight() / 2.0f)
+	]
+
+	// Snake:
+	snakeReset();
+	
+	mainMenu = MainMenu(0, 1); // params: GameState, MainMenuSelectorState
+	gameSettings = GameSettings();
+	gameSelection = GameSelection();
+}
+
+
+// ChaiLove callback - Update the game state:
+def update(delta) {
+	if(mainMenu.gameState == 1) {
+		gameSelection.inputSelector();
+		gameSelection.selectionLogic();
+
+		// Pong:
+		if(gameSelection.selectedGame == 1) {
+			if(mainmenu_music.isPlaying()) {
+				mainmenu_music.stop();
+			}
+			
+			runPong(delta);
+		}
+		// Snake:
+		else if(gameSelection.selectedGame == 2) {
+			if(mainmenu_music.isPlaying()) {
+				mainmenu_music.stop();
+			}
+
+			runSnake(delta);
+		}
+  	}
+	else if(mainMenu.gameState == 2) {
+		gameSettings.inputSelector();
+		gameSettings.selectionLogic();
+	}
+	else if(mainMenu.gameState == 3) {
+		love.event.quit();
+	}
+  	else if(mainMenu.gameState == 0) {
+		if(snake_music.isPlaying()) {
+			snake_music.stop();
+		}
+
+		if(!mainmenu_music.isPlaying()) {
+			mainmenu_music.play();
+		}
+
+		mainMenu.buttonLogic();
+		mainMenu.inputSelector();
+  	}
+}
+
+
+// ChaiLove callback - Draw the game state:
+def draw() {
+  	if(mainMenu.gameState == 1) {
+		if(gameSelection.selectedGame == 0) {
+			gameSelection.drawSelection();
+			gameSelection.drawSelector();
+		}
+		// Pong:
+		else if(gameSelection.selectedGame == 1) {
+			for(var i = 0; i < 2; ++i) {
+				players[i].draw();
+			}
+			love.graphics.setColor(128, 128, 128);
+			love.graphics.circle("fill", ball["x"], ball["y"], ball["radius"]);
+		}
+		// Snake:
+		else if(gameSelection.selectedGame == 2) {
+			drawSnake();
+		}
+  	}
+	else if(mainMenu.gameState == 2) {
+		gameSettings.drawSelection();
+		gameSettings.drawSelector();
+	}
+  	else {
+		mainMenu.drawButtons();
+    	mainMenu.drawSelector();
+  	}
+}
+
+
+// Pong - Reset the ball:
+def ballReset() {
+	ball = [
+		"x": love.graphics.getWidth() / 2.0f,
+		"y": love.graphics.getHeight() / 2.0f,
+		"xspeed": 200.0f,
+		"yspeed": 100.0f,
+		"radius": 10
+	]
+}
+
+
+// Pong - Check the ball collision:
+def ballCollide(player) {
+	if(ball["y"] + ball["radius"] <= player.y) {
+		return false;
+	}
+	if(ball["y"] - ball["radius"]>= player.y + player.height) {
+		return false;
+	}
+	if(ball["x"] + ball["radius"] <= player.x) {
+		return false;
+	}
+	if(ball["x"] - ball["radius"] > player.x + player.width) {
+		return false;
+	}
+
+  	// Ball hit:
+  	ball["xspeed"] *= 1.1f;
+  	if(ball["yspeed"] > 0) {
+    	if(ball["y"] < player.y + player.height / 4) {
+      		ball["yspeed"] *= -1;
+    	}
+  	}
+  	else if(ball["yspeed"] < 0) {
+    	if(ball["y"] > player.y + player.height / 2 + player.height / 4) {
+      		ball["yspeed"] *= -1;
+    	}
+  	}
+
+	// Play sound for every ball collision:
+	pong_hit.play();
+	
+	return true;
+}
+
+
+// Pong - Execute game logic:
+def runPong(delta) {
+  	for(var i = 0; i < 2; ++i) {
+    	players[i].update(delta);
+  	}
+
+  	if(ball["yspeed"] < 0) {
+    	if(ball["y"] < 0) {
+    		ball["yspeed"] *= -1;
+    	}
+  	}
+  	else if(ball["yspeed"] > 0) {
+    	if(ball["y"] > love.graphics.getHeight()) {
+        	ball["yspeed"] *= -1;
+    	}
+  	}
+  
+  	if(ball["x"] < 0) {
+    	players[1].score += 1;
+		pong_score.play();
+    	ballReset();
+  	}
+  	else if(ball["x"] > love.graphics.getWidth()) {
+    	players[0].score += 1;
+		pong_score.play();
+    	ballReset();
+  	}
+
+  
+  	if(ball["xspeed"] <= 0) {
+    	if(ballCollide(players[0])) {
+      		ball["xspeed"] *= -1;
+    	}
+  	}
+  	else {
+    	if(ballCollide(players[1])) {
+      		ball["xspeed"] *= -1;
+    	}
+  	}
+
+  	ball["x"] += ball["xspeed"] * delta;
+  	ball["y"] += ball["yspeed"] * delta;
+}
+
+
+// Snake - Reset the game:
+def snakeReset() {
+	Snake = [];
+	LEN = 5;
+	for (var i = 0; i < LEN; ++i) {
+		Snake.push_back([WIDTH / 2, HEIGHT / 2]);
+	}
+	dir = 0;
+	time = 0;
+	Tile = [love.math.random(WIDTH - 2), love.math.random(HEIGHT - 2)];
+}
+
+
+// Snake - Draw game:
+def drawSnake() {
+	// Display the background grid:
+	love.graphics.setColor(190, 190, 190);
+	for (var y = 0; y < HEIGHT; ++y) {
+		for (var x = 0; x < WIDTH; ++x) {
+			love.graphics.rectangle("fill", x*gridScale, y*gridScale, gridScale - 2, gridScale - 2);
+		}
+	}
+
+	// Render the snake:
+	love.graphics.setColor(0, 0, 0);
+	for (var i = 0; i < Snake.size(); ++i) {
+		love.graphics.rectangle("fill", Snake[i][0]*gridScale, Snake[i][1]*gridScale, gridScale - 2, gridScale - 2);
+	}
+
+    // Show the food:
+	love.graphics.setColor(0, 0, 0);
+	love.graphics.rectangle("fill", Tile[0]*gridScale, Tile[1]*gridScale, gridScale - 2, gridScale - 2);
+}
+
+
+// Snake - Execute game logic:
+def runSnake(delta) {
+	if (love.keyboard.isDown("m")) {
+		if(snake_music.isPlaying()) {
+			snake_music.stop();
+			mainmenu_music.play();
+		}
+		else {
+			mainmenu_music.play();
+		}
+    	
+		mainMenu.gameState = 0;
+    }
+
+	if(!snake_music.isPlaying()) {
+		snake_music.play();
+	}
+	
+	time = time + delta;
+
+	if (love.joystick[0].isDown("up")) {
+		if (dir != 2) {
+			dir = 1;
+		}
+	}
+	if (love.joystick[0].isDown("down")) {
+		if (dir != 1) {
+			dir = 2;
+		}
+	}
+	if (love.joystick[0].isDown("left")) {
+		if (dir != 4) {
+			dir = 3;
+		}
+	}
+	if (love.joystick[0].isDown("right")) {
+		if (dir != 3) {
+			dir = 4;
+		}
+	}
+
+	if (time >= snakeSpeed) {
+		time = 0.0f;
+	}
+	else {
+		return;
+	}
+
+	var head = Snake.back();
+
+	// Movement:
+	switch (dir) {
+		case (1) {
+			Snake.push_back([head[0] + 0, head[1] - 1]);
+			break;
+		}
+		case (2) {
+			Snake.push_back([head[0] + 0, head[1] + 1]);
+			break;
+		}
+		case (3) {
+			Snake.push_back([head[0] - 1, head[1] + 0]);
+			break;
+		}
+		case (4) {
+			Snake.push_back([head[0] + 1, head[1] + 0]);
+			break;
+		}
+	}
+
+	head = Snake.back();
+
+	if (head[0] < 0 || head[0] == WIDTH || head[1] < 0 || head[1] == HEIGHT) {
+		snake_gameover.play();
+		snakeReset();
+	}
+
+	for (var i = 0; i < Snake.size() - 1; ++i) {
+		if (head[0] == Snake[i][0] && head[1] == Snake[i][1] && dir > 0) {
+			snake_gameover.play();
+			snakeReset();
+		}
+	}
+
+	if (head[0] == Tile[0] && head[1] == Tile[1]) {
+		Tile = [love.math.random(WIDTH - 2), love.math.random(HEIGHT - 2)];
+		snake_item.play();
+	}
+	else if (dir > 0) {
+		var newS = [];
+		for (var sTime = 1; sTime < Snake.size(); ++sTime) {
+			newS.push_back(Snake[sTime]);
+		}
+		Snake = newS;
+	}
+}

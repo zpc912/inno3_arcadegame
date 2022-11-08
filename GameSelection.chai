@@ -1,0 +1,83 @@
+class GameSelection {
+    var selectorState;
+    var isDown;
+    var selectedGame
+
+
+    def GameSelection() {
+        this.selectorState = 1;
+        this.isDown = false;
+        this.selectedGame = 0;
+    }
+
+
+    def resetSelection() {
+        this.selectedGame = 0;
+    }
+
+
+    def drawSelection() {
+        this.selectedGame = 0;
+        love.graphics.print("G A M E S", love.graphics.getWidth() / 2.0f - 50, love.graphics.getHeight() / 2.0f - 150);
+        love.graphics.print("Pong", love.graphics.getWidth() / 2.0f - 50, love.graphics.getHeight() / 2.0f - 60);
+        love.graphics.print("Snake", love.graphics.getWidth() / 2.0f - 50, love.graphics.getHeight() / 2.0f);
+        love.graphics.print("Press 'Enter' to start a game ...", love.graphics.getWidth() / 2.0f - 50, love.graphics.getHeight() / 2.0f + 60);
+        love.graphics.print("Press 'M' to go back ...", love.graphics.getWidth() / 2.0f - 50, love.graphics.getHeight() / 2.0f + 120);
+    }
+
+
+    def drawSelector() {
+        if(this.selectorState == 1) {
+            love.graphics.setColor(128, 128, 128);
+            love.graphics.ellipse("fill", love.graphics.getWidth() / 2.0f - 80, love.graphics.getHeight() / 2.0f - 58, 10, 4);
+        }
+        else if(this.selectorState == 2) {
+            love.graphics.setColor(128, 128, 128);
+            love.graphics.ellipse("fill", love.graphics.getWidth() / 2.0f - 80, love.graphics.getHeight() / 2.0f + 4, 10, 4);
+        }
+    }
+
+
+    def inputSelector() {
+        if (love.keyboard.isDown("w") && this.selectorState == 1 && !this.isDown) {
+            this.isDown = true;
+            this.selectorState = 1;
+        }
+        else if (love.keyboard.isDown("w") && this.selectorState == 2 && !this.isDown) {
+            this.isDown = true;
+            this.selectorState = 1;
+        }
+        else if (love.keyboard.isDown("s") && this.selectorState == 1 && !this.isDown) {
+            this.isDown = true;
+            this.selectorState = 2;
+        }
+        else if (love.keyboard.isDown("s") && this.selectorState == 2 && !this.isDown) {
+            this.isDown = true;
+            this.selectorState = 2;
+        }
+        else if (love.keyboard.isDown("w") && this.isDown) {
+            this.isDown = true;
+        }
+        else if (love.keyboard.isDown("s") && this.isDown) {
+            this.isDown = true;
+        }
+        else {
+            this.isDown = false;
+        }
+    }
+
+
+    def selectionLogic() {
+        if(love.joystick.isDown(0, "start") && this.selectorState == 1) {
+            this.selectedGame = 1; // Game #1 is selected for playing
+        }
+        else if(love.joystick.isDown(0, "start") && this.selectorState == 2) {
+            this.selectedGame = 2; // Game #2 is selected for playing
+        }
+        else if(love.keyboard.isDown("m")) {
+            this.selectedGame = 0;
+            this.selectorState = 1;
+            mainMenu.gameState = 0; // Go back to MainMenu
+        }
+    }
+}
